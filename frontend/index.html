@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrowdMonitor — Smart Tourist Crowd Monitoring</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        :root {
+            --bg: #07101f;
+            --s1: #0d1a2e;
+            --s2: #132033;
+            --s3: #1a2d47;
+            --border: rgba(255, 255, 255, 0.07);
+            --border2: rgba(255, 255, 255, 0.14);
+            --text: #ddeeff;
+            --muted: #6a8099;
+            --accent: #3b82f6;
+            --accent2: #60a5fa;
+            --green: #22c55e;
+            --yellow: #f59e0b;
+            --red: #ef4444;
+            --teal: #14b8a6;
+            --purple: #a78bfa;
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            min-height: 100vh
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--s3);
+            border-radius: 3px
+        }
+
+        img {
+            display: block;
+            max-width: 100%
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none
+        }
+
+        /* NAV */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(7, 16, 31, 0.88);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 19px;
+            color: var(--accent2);
+            letter-spacing: -0.5px
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2px
+        }
+
+        .nav-tab {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .nav-tab.active {
+            background: var(--s2);
+            color: var(--text)
+        }
+
+        .nav-tab:hover:not(.active) {
+            color: var(--text)
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            color: var(--green);
+            font-weight: 500
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulseAnim 2s ease-in-out infinite
+        }
+
+        @keyframes pulseAnim {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, .4)
+            }
+
+            50% {
+                opacity: .7;
+                transform: scale(1.2);
+                box-shadow: 0 0 0 6px rgba(34, 197, 94, 0)
+            }
+        }
+
+        /* SCREENS */
+        .screen {
+            display: none
+        }
+
+        .screen.active {
+            display: block
+        }
+
+        /* HERO */
+        .hero {
+            position: relative;
+            padding: 56px 24px 40px;
+            text-align: center;
+            overflow: hidden
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(59, 130, 246, .11) 0%, transparent 70%), radial-gradient(ellipse 35% 30% at 15% 70%, rgba(20, 184, 166, .07) 0%, transparent 60%), radial-gradient(ellipse 35% 30% at 85% 70%, rgba(167, 139, 250, .07) 0%, transparent 60%);
+            pointer-events: none
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(59, 130, 246, .1);
+            border: 1px solid rgba(59, 130, 246, .25);
+            border-radius: 20px;
+            padding: 5px 16px;
+            font-size: 12px;
+            color: var(--accent2);
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            margin-bottom: 18px
+        }
+
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(26px, 4vw, 46px);
+            line-height: 1.1;
+            letter-spacing: -1px;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, #ddeeff 30%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .hero p {
+            color: var(--muted);
+            font-size: 15px;
+            max-width: 500px;
+            margin: 0 auto 28px
+        }
+
+        .hero-search {
+            max-width: 460px;
+            margin: 0 auto;
+            position: relative
+        }
+
+        .hero-search input {
+            width: 100%;
+            background: var(--s1);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 13px 20px 13px 46px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s
+        }
+
+        .hero-search input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, .12)
+        }
+
+        .hero-search input::placeholder {
+            color: var(--muted)
+        }
+
+        .search-ico {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 17px;
+            pointer-events: none
+        }
+
+        /* STATS */
+        .stats-strip {
+            display: flex;
+            gap: 10px;
+            padding: 0 24px 20px;
+            overflow-x: auto
+        }
+
+        .stat-pill {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 18px;
+            min-width: 130px;
+            flex: 1
+        }
+
+        .spl {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 3px
+        }
+
+        .spv {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 22px
+        }
+
+        /* MAIN */
+        .main {
+            padding: 0 24px 56px
+        }
+
+        /* FILTER BAR */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 18px;
+            flex-wrap: wrap
+        }
+
+        .filter-lbl {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .chip {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 13px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all .18s;
+            white-space: nowrap;
+            font-family: 'DM Sans', sans-serif
+        }
+
+        .chip.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff
+        }
+
+        .chip:hover:not(.active) {
+            border-color: var(--border2);
+            color: var(--text)
+        }
+
+        /* LEGEND */
+        .legend-bar {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 18px;
+            padding: 10px 16px;
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            flex-wrap: wrap
+        }
+
+        .leg {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .legdot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0
+        }
+
+        /* GRID */
+        .places-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+            gap: 16px
+        }
+
+        .place-card {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform .22s, border-color .22s, box-shadow .22s;
+            animation: fadeUp .4s ease both
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .place-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border2);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, .45)
+        }
+
+        .card-img-wrap {
+            width: 100%;
+            height: 180px;
+            position: relative;
+            overflow: hidden;
+            background: var(--s2)
+        }
+
+        .card-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .4s ease
+        }
+
+        .place-card:hover .card-img-wrap img {
+            transform: scale(1.06)
+        }
+
+        .card-img-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(7, 16, 31, .8) 100%)
+        }
+
+        .card-crowd-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px
+        }
+
+        .card-body {
+            padding: 14px 16px
+        }
+
+        .card-name {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 5px
+        }
+
+        .card-meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px
+        }
+
+        .card-row {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 8px
+        }
+
+        .cs {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .cs strong {
+            color: var(--text);
+            font-weight: 500
+        }
+
+        .prog-bg {
+            background: var(--s3);
+            border-radius: 4px;
+            height: 5px;
+            overflow: hidden
+        }
+
+        .prog-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease
+        }
+
+        /* CROWD BADGES */
+        .cbadge {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 12px;
+            white-space: nowrap
+        }
+
+        .cb-low {
+            background: rgba(34, 197, 94, .12);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, .25)
+        }
+
+        .cb-mod {
+            background: rgba(245, 158, 11, .12);
+            color: var(--yellow);
+            border: 1px solid rgba(245, 158, 11, .25)
+        }
+
+        .cb-high {
+            background: rgba(239, 68, 68, .12);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, .25)
+        }
+
+        /* ═══ DETAIL PAGE ═══ */
+        #screen-detail {
+            background: var(--bg)
+        }
+
+        .detail-hero {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            overflow: hidden
+        }
+
+        .detail-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .detail-hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(7, 16, 31, .25) 0%, rgba(7, 16, 31, .9) 100%)
+        }
+
+        .detail-hero-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 24px
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(13, 26, 46, .7);
+            border: 1px solid var(--border2);
+            border-radius: 9px;
+            padding: 7px 14px;
+            font-size: 13px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all .2s;
+            margin-bottom: 16px;
+            font-family: 'DM Sans', sans-serif
+        }
+
+        .back-btn:hover {
+            background: var(--s2)
+        }
+
+        .detail-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(22px, 3.5vw, 36px);
+            line-height: 1.1;
+            margin-bottom: 6px
+        }
+
+        .detail-subtitle {
+            font-size: 14px;
+            color: rgba(221, 238, 255, .65)
+        }
+
+        .detail-body {
+            padding: 24px
+        }
+
+        .section-heading {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        /* INFO TILES */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 28px
+        }
+
+        .info-tile {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px
+        }
+
+        .info-tile-label {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 5px
+        }
+
+        .info-tile-val {
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+            font-size: 19px
+        }
+
+        /* HOURLY BARS */
+        .hourly-chart {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 28px
+        }
+
+        .chart-lbl {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 12px
+        }
+
+        .bar-row {
+            display: flex;
+            gap: 5px;
+            align-items: flex-end;
+            height: 80px
+        }
+
+        .barcol {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px
+        }
+
+        .barrect {
+            width: 100%;
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            transition: height .7s ease
+        }
+
+        .barlabel {
+            font-size: 9px;
+            color: var(--muted)
+        }
+
+        /* AMENITY SECTIONS */
+        .amenity-section {
+            margin-bottom: 30px
+        }
+
+        .amenity-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 12px
+        }
+
+        .amenity-card {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            overflow: hidden;
+            transition: border-color .2s, transform .2s
+        }
+
+        .amenity-card:hover {
+            border-color: var(--border2);
+            transform: translateY(-2px)
+        }
+
+        .ac-img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            background: var(--s2)
+        }
+
+        .ac-img-placeholder {
+            width: 100%;
+            height: 120px;
+            background: var(--s2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px
+        }
+
+        .ac-body {
+            padding: 12px 14px
+        }
+
+        .ac-name {
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 3px
+        }
+
+        .ac-meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px
+        }
+
+        .ac-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-bottom: 8px
+        }
+
+        .actag {
+            background: var(--s2);
+            border-radius: 5px;
+            padding: 2px 8px;
+            font-size: 11px;
+            color: var(--muted)
+        }
+
+        .ac-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--yellow)
+        }
+
+        /* ENTITIES / POI GRID */
+        .poi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 10px;
+            margin-bottom: 28px
+        }
+
+        .poi-card {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px
+        }
+
+        .poi-icon {
+            font-size: 24px;
+            flex-shrink: 0
+        }
+
+        .poi-name {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 2px
+        }
+
+        .poi-desc {
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.4
+        }
+
+        /* GALLERY STRIP */
+        .gallery-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 28px
+        }
+
+        .gallery-thumb {
+            border-radius: 10px;
+            overflow: hidden;
+            height: 110px;
+            background: var(--s2)
+        }
+
+        .gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .35s ease
+        }
+
+        .gallery-thumb:hover img {
+            transform: scale(1.08)
+        }
+
+        /* ALTERNATIVES */
+        .alts-strip {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 28px
+        }
+
+        .alt-row {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 13px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background .18s, transform .18s
+        }
+
+        .alt-row:hover {
+            background: var(--s2);
+            transform: translateX(4px)
+        }
+
+        .alt-name {
+            font-size: 14px;
+            font-weight: 500
+        }
+
+        .alt-region {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px
+        }
+
+        /* MAP EMBED */
+        .map-box {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            height: 220px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .map-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 9px;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            text-decoration: none;
+            transition: background .2s
+        }
+
+        .map-link:hover {
+            background: #2563eb
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(60px);
+            background: var(--s1);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 11px 22px;
+            font-size: 14px;
+            z-index: 500;
+            transition: transform .3s cubic-bezier(.34, 1.56, .64, 1), opacity .3s;
+            opacity: 0;
+            white-space: nowrap;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .5)
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .75);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            padding: 20px
+        }
+
+        .modal-overlay.open {
+            display: flex
+        }
+
+        .modal-box {
+            background: var(--s1);
+            border: 1px solid var(--border2);
+            border-radius: 18px;
+            padding: 24px;
+            width: 100%;
+            max-width: 370px;
+            animation: mIn .22s ease
+        }
+
+        @keyframes mIn {
+            from {
+                opacity: 0;
+                transform: scale(.95) translateY(8px)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0)
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px
+        }
+
+        .modal-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 17px
+        }
+
+        .close-btn {
+            background: var(--s2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s
+        }
+
+        .close-btn:hover {
+            color: var(--text)
+        }
+
+        .modal-desc {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 16px;
+            line-height: 1.5
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 18px
+        }
+
+        .slot-btn {
+            background: var(--s2);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 9px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            transition: all .18s
+        }
+
+        .slot-btn:hover {
+            border-color: var(--accent)
+        }
+
+        .slot-btn.booked {
+            background: rgba(239, 68, 68, .08);
+            color: var(--red);
+            border-color: rgba(239, 68, 68, .2);
+            cursor: not-allowed
+        }
+
+        .slot-btn.chosen {
+            background: rgba(59, 130, 246, .15);
+            border-color: var(--accent);
+            color: var(--accent2)
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 9px
+        }
+
+        .btn-cancel {
+            background: var(--s2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            border-radius: 9px;
+            padding: 9px 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all .18s
+        }
+
+        .btn-cancel:hover {
+            color: var(--text)
+        }
+
+        .btn-confirm {
+            flex: 1;
+            background: var(--accent);
+            border: none;
+            color: #fff;
+            border-radius: 9px;
+            padding: 9px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background .18s
+        }
+
+        .btn-confirm:hover {
+            background: #2563eb
+        }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 24px;
+            font-size: 12px;
+            color: var(--muted);
+            border-top: 1px solid var(--border)
+        }
+
+        @media(max-width:640px) {
+            .nav-tabs {
+                display: none
+            }
+
+            .hero {
+                padding: 36px 16px 28px
+            }
+
+            .main {
+                padding: 0 16px 40px
+            }
+
+            .stats-strip {
+                padding: 0 16px 16px
+            }
+
+            .detail-body {
+                padding: 16px
+            }
+
+            .detail-hero {
+                height: 240px
+            }
+        }
+
+        @media(max-width:480px) {
+            .places-grid {
+                grid-template-columns: 1fr
+            }
+
+            .amenity-cards {
+                grid-template-columns: 1fr
+            }
+
+            .poi-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+
+<body>
+
+    <div id="errorBanner" style="display:none;background:#ef4444;color:#fff;text-align:center;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;position:sticky;top:58px;z-index:90;">
+        ⚠️ Could not connect to server. Please run: cd backend && npm start
+    </div>
+
+    <!-- NAV -->
+    <nav class="navbar">
+        <div class="nav-logo">CrowdMonitor</div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showScreen('dashboard',this)">Dashboard</button>
+            <button class="nav-tab" onclick="showScreen('map-page',this)">Heatmap</button>
+            <button class="nav-tab" onclick="showScreen('amenities-page',this)">Amenities</button>
+            <button class="nav-tab" onclick="showScreen('gallery-page',this)">Gallery</button>
+            <button class="nav-tab" onclick="showScreen('bookings-page',this)">My Bookings</button>
+        </div>
+        <div class="live-badge">
+            <div class="pulse"></div>Live
+        </div>
+    </nav>
+
+    <!-- SCREEN: DASHBOARD -->
+    <div class="screen active" id="screen-dashboard">
+        <header class="hero">
+            <div class="hero-eyebrow">🗺️ Smart Tourist Intelligence</div>
+            <h1>Find the Perfect Moment<br>to Explore</h1>
+            <p>Real-time crowd monitoring for Tamil Nadu's iconic destinations. Click any card for full details.</p>
+            <div class="hero-search">
+                <span class="search-ico">⌕</span>
+                <input type="text" id="searchInput" placeholder="Search destinations, regions…"
+                    oninput="handleSearch(this.value)">
+            </div>
+        </header>
+        <div class="stats-strip">
+            <div class="stat-pill">
+                <div class="spl">Destinations</div>
+                <div class="spv" style="color:var(--accent2)">12</div>
+            </div>
+            <div class="stat-pill">
+                <div class="spl">Low Crowd</div>
+                <div class="spv" id="statLow" style="color:var(--green)">—</div>
+            </div>
+            <div class="stat-pill">
+                <div class="spl">High Crowd</div>
+                <div class="spv" id="statHigh" style="color:var(--red)">—</div>
+            </div>
+            <div class="stat-pill">
+                <div class="spl">Avg Wait</div>
+                <div class="spv" style="color:var(--yellow)">18m</div>
+            </div>
+        </div>
+        <main class="main">
+            <div class="filter-bar">
+                <span class="filter-lbl">Filter:</span>
+                <div class="chip active" onclick="setFilter('all',this)">All</div>
+                <div class="chip" onclick="setFilter('low',this)">Low Crowd</div>
+                <div class="chip" onclick="setFilter('moderate',this)">Moderate</div>
+                <div class="chip" onclick="setFilter('high',this)">High Crowd</div>
+                <div class="chip" onclick="setFilter('heritage',this)">Heritage</div>
+                <div class="chip" onclick="setFilter('nature',this)">Nature</div>
+                <div class="chip" onclick="setFilter('beach',this)">Beach</div>
+            </div>
+            <div class="legend-bar">
+                <div class="leg">
+                    <div class="legdot" style="background:var(--green)"></div>Low (&lt;40%)
+                </div>
+                <div class="leg">
+                    <div class="legdot" style="background:var(--yellow)"></div>Moderate (40–70%)
+                </div>
+                <div class="leg">
+                    <div class="legdot" style="background:var(--red)"></div>High (&gt;70%)
+                </div>
+                <div class="leg" style="margin-left:auto;font-size:12px">👆 Click a card for full details</div>
+            </div>
+            <div class="places-grid" id="placesGrid"></div>
+        </main>
+    </div>
+
+    <!-- SCREEN: DETAIL (dynamically populated) -->
+    <div class="screen" id="screen-detail">
+        <div class="detail-hero" id="d-hero">
+            <img id="d-hero-img" src="" alt="" loading="lazy">
+            <div class="detail-hero-overlay"></div>
+            <div class="detail-hero-content">
+                <button class="back-btn" onclick="goBack()">← Back to Dashboard</button>
+                <div class="detail-title" id="d-title"></div>
+                <div class="detail-subtitle" id="d-subtitle"></div>
+            </div>
+        </div>
+        <div class="detail-body">
+            <div class="info-grid" id="d-info-grid"></div>
+            <div class="hourly-chart">
+                <div class="chart-lbl">Today's crowd forecast (hourly)</div>
+                <div class="bar-row" id="d-bars"></div>
+            </div>
+            <div id="d-alts-section" style="margin-bottom:28px">
+                <div class="section-heading" id="d-alts-heading"></div>
+                <div class="alts-strip" id="d-alts-list"></div>
+            </div>
+            <div class="amenity-section">
+                <div class="section-heading">🏨 Hotels Nearby</div>
+                <div class="amenity-cards" id="d-hotels"></div>
+            </div>
+            <div class="amenity-section">
+                <div class="section-heading">🍽️ Restaurants &amp; Dining</div>
+                <div class="amenity-cards" id="d-restaurants"></div>
+            </div>
+            <div class="amenity-section">
+                <div class="section-heading">🛍️ Shops &amp; Markets</div>
+                <div class="amenity-cards" id="d-shops"></div>
+            </div>
+            <div class="amenity-section">
+                <div class="section-heading">🗺️ Points of Interest &amp; Facilities</div>
+                <div class="poi-grid" id="d-pois"></div>
+            </div>
+            <div class="amenity-section">
+                <div class="section-heading">📸 Photo Gallery</div>
+                <div class="gallery-strip" id="d-gallery"></div>
+            </div>
+            <div class="amenity-section">
+                <div class="section-heading">📍 Location &amp; Directions</div>
+                <div class="map-box" id="d-mapbox">
+                    <div style="font-size:32px">🗺️</div>
+                    <div id="d-map-text" style="color:var(--muted);font-size:13px;text-align:center"></div>
+                    <a id="d-map-link" href="#" target="_blank" class="map-link">Open in Google Maps ↗</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN: MAP -->
+    <div class="screen" id="screen-map-page">
+        <div class="main" style="padding-top:24px">
+            <div
+                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:20px">Real-time Crowd Heatmap</div>
+                <div style="font-size:13px;color:var(--muted)">Tamil Nadu · Simulated live data</div>
+            </div>
+            <div
+                style="background:var(--s1);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px">
+                <svg id="mapSvg" viewBox="0 0 700 440" style="width:100%;height:440px;display:block"></svg>
+            </div>
+            <div class="legend-bar">
+                <div class="leg">
+                    <div class="legdot" style="background:var(--green)"></div>Low crowd
+                </div>
+                <div class="leg">
+                    <div class="legdot" style="background:var(--yellow)"></div>Moderate
+                </div>
+                <div class="leg">
+                    <div class="legdot" style="background:var(--red)"></div>High crowd
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN: AMENITIES -->
+    <div class="screen" id="screen-amenities-page">
+        <div class="main" style="padding-top:24px">
+            <div
+                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:20px">All Amenities</div>
+                <select id="amenityTypeFilter"
+                    style="background:var(--s1);border:1px solid var(--border2);color:var(--text);border-radius:9px;padding:7px 13px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none"
+                    onchange="renderAllAmenities(this.value)">
+                    <option value="all">All Types</option>
+                    <option value="hotel">Hotels</option>
+                    <option value="restaurant">Restaurants</option>
+                    <option value="shopping">Shopping</option>
+                </select>
+            </div>
+            <div class="amenity-cards" id="allAmenitiesGrid"></div>
+        </div>
+    </div>
+
+    <!-- SCREEN: GALLERY -->
+    <div class="screen" id="screen-gallery-page">
+        <div class="main" style="padding-top:24px">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin-bottom:18px">Iconic Spot
+                Gallery</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"
+                id="galleryPageGrid"></div>
+        </div>
+    </div>
+
+    <!-- SCREEN: BOOKINGS -->
+    <div class="screen" id="screen-bookings-page">
+        <div class="main" style="padding-top:24px">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin-bottom:18px">My Reservations</div>
+            <div id="bookingsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px"></div>
+        </div>
+    </div>
+
+    <!-- BOOKING MODAL -->
+    <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Check Availability</div>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-desc" id="modal-desc"></div>
+            <div class="slots-grid" id="modal-slots"></div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-confirm" onclick="confirmBooking()">Confirm Booking</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <footer>
+        <p>&copy; 2026 CrowdMonitor — Smart Tourist Crowd Monitoring System. All rights reserved.</p>
+    </footer>
+
+    <script>
+        /* ══════════════════════════════════════════════════
+           STATE
+        ══════════════════════════════════════════════════ */
+        let PLACES = [];
+        let currentFilter = 'all';
+        let currentSearch = '';
+        let selectedSlot = null;
+        let currentAmenityForBooking = null;
+        let currentPlaceIdForBooking = null;
+
+        /* ══════════════════════════════════════════════════
+           HELPERS
+        ══════════════════════════════════════════════════ */
+        const ccol = c => c === 'low' ? 'var(--green)' : c === 'moderate' ? 'var(--yellow)' : 'var(--red)';
+        const cclass = c => c === 'low' ? 'cb-low' : c === 'moderate' ? 'cb-mod' : 'cb-high';
+        const clabel = c => c === 'low' ? 'Low Crowd' : c === 'moderate' ? 'Moderate' : 'High Crowd';
+        const catbg = cat => ({ beach: 'rgba(20,184,166,.12)', heritage: 'rgba(167,139,250,.12)', nature: 'rgba(34,197,94,.12)' })[cat] || 'rgba(255,255,255,.04)';
+
+        function toast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function showErrorBanner(show) {
+            const eb = document.getElementById('errorBanner');
+            if (eb) eb.style.display = show ? 'block' : 'none';
+        }
+
+        /* ══════════════════════════════════════════════════
+           API CALLS
+        ══════════════════════════════════════════════════ */
+        const API_BASE = '/api'; // Use relative path to work with the proxy/static serving
+
+        async function fetchPlaces(isPolling = false) {
+            const grid = document.getElementById('placesGrid');
+            if (!isPolling && grid) {
+                grid.innerHTML = '<div style="color:var(--muted);grid-column:1/-1;padding:40px;text-align:center;font-size:15px"><div style="display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:10px;"></div><br>Loading live data...</div>';
+            }
+            try {
+                let url = `${API_BASE}/places`;
+                const params = new URLSearchParams();
+                if (currentSearch) params.append('search', currentSearch);
+                if (currentFilter !== 'all') params.append('category', currentFilter);
+                if (params.toString()) url += `?${params.toString()}`;
+
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('API Error');
+                const json = await res.json();
+                PLACES = json.data || [];
+                renderCards(PLACES);
+                showErrorBanner(false);
+            } catch (err) {
+                console.error(err);
+                if (!isPolling && grid) grid.innerHTML = '<div style="color:var(--red);grid-column:1/-1;padding:40px;text-align:center;">Failed to load data.</div>';
+                showErrorBanner(true);
+            }
+        }
+
+        async function fetchStats() {
+            try {
+                const res = await fetch(`${API_BASE}/stats`);
+                if (!res.ok) throw new Error('API Error');
+                const json = await res.json();
+                const d = json.data;
+                document.getElementById('statLow').textContent = d.low;
+                document.getElementById('statHigh').textContent = d.high;
+                
+                // Update average wait time tile (the 4th stat pill)
+                const statPills = document.querySelectorAll('.stat-pill');
+                if(statPills.length >= 4) {
+                    const waitEl = statPills[3].querySelector('.spv');
+                    if (waitEl) waitEl.textContent = d.avgWait + 'm';
+                }
+
+                showErrorBanner(false);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function fetchPlaceDetails(id) {
+            try {
+                const res = await fetch(`${API_BASE}/places/${id}`);
+                if (!res.ok) throw new Error('API Error');
+                const json = await res.json();
+                const p = json.data;
+                
+                // If crowd is high, fetch alternatives
+                let alts = [];
+                if (p.crowd === 'high') {
+                    const resAlts = await fetch(`${API_BASE}/places/${id}/alternatives`);
+                    if (resAlts.ok) {
+                        const jsonAlts = await resAlts.json();
+                        alts = jsonAlts.data || [];
+                    }
+                }
+                
+                renderPlaceDetails(p, alts);
+            } catch (err) {
+                console.error(err);
+                toast('⚠️ Failed to load place details');
+            }
+        }
+
+        async function apiCreateBooking(data) {
+            try {
+                const res = await fetch(`${API_BASE}/bookings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!res.ok) throw new Error('API Error');
+                const json = await res.json();
+                toast('✅ ' + json.message);
+                return true;
+            } catch (err) {
+                console.error(err);
+                toast('❌ Failed to create booking');
+                return false;
+            }
+        }
+
+        /* ══════════════════════════════════════════════════
+           SCREEN ROUTING
+        ══════════════════════════════════════════════════ */
+        function showScreen(id, btn) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + id).classList.add('active');
+            if (btn) {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+            }
+            if (id === 'map-page') renderMap();
+            if (id === 'amenities-page') renderAllAmenities('all');
+            if (id === 'gallery-page') renderGalleryPage();
+            if (id === 'bookings-page') fetchAndRenderBookings();
+        }
+
+        function goBack() {
+            showScreen('dashboard');
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('.nav-tab').classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ══════════════════════════════════════════════════
+           DASHBOARD — CARDS
+        ══════════════════════════════════════════════════ */
+        function renderCards(list) {
+            const grid = document.getElementById('placesGrid');
+            if (!grid) return;
+            if (!list.length) {
+                grid.innerHTML = '<div style="color:var(--muted);grid-column:1/-1;padding:40px;text-align:center;font-size:15px">No destinations match your search.</div>';
+                return;
+            }
+            grid.innerHTML = list.map((p, i) => `
+    <div class="place-card" onclick="openDetailPage(${p.id})" style="animation-delay:${i * .05}s">
+      <div class="card-img-wrap" style="background:${catbg(p.category)}">
+        <img src="${p.hero}" alt="${p.name}" loading="lazy" onerror="this.style.display='none'">
+        <div class="card-img-overlay"></div>
+        <div class="card-crowd-badge"><div class="cbadge ${cclass(p.crowd)}">${clabel(p.crowd)}</div></div>
+      </div>
+      <div class="card-body">
+        <div class="card-name">${p.emoji} ${p.name}</div>
+        <div class="card-meta">📍 ${p.region} · ⭐ ${p.rating} · ${p.type}</div>
+        <div class="card-row">
+          <div class="cs">Wait: <strong>${p.wait}</strong></div>
+          <div class="cs">Best: <strong>${p.best}</strong></div>
+        </div>
+        <div class="prog-bg"><div class="prog-fill" style="width:${p.crowdPct}%;background:${ccol(p.crowd)}"></div></div>
+      </div>
+    </div>
+  `).join('');
+        }
+
+        function setFilter(f, el) {
+            currentFilter = f;
+            document.querySelectorAll('.filter-bar .chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            fetchPlaces();
+        }
+        function handleSearch(q) { 
+            currentSearch = q.toLowerCase().trim(); 
+            fetchPlaces(); 
+        }
+
+        /* ══════════════════════════════════════════════════
+           DETAIL PAGE
+        ══════════════════════════════════════════════════ */
+        const HOURS = ['6am', '8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm', '10pm', '12am', '2am', '4am'];
+
+        function openDetailPage(id) {
+            // Show a loading state or just wait for fetch
+            document.getElementById('d-hero-img').src = '';
+            document.getElementById('d-title').innerHTML = '<div style="display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-right:10px;"></div>Loading...';
+            document.getElementById('d-subtitle').textContent = '';
+            
+            // show detail screen immediately for better UX
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-detail').classList.add('active');
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            fetchPlaceDetails(id);
+        }
+
+        function renderPlaceDetails(p, alts) {
+            if (!p) return;
+
+            // hero
+            document.getElementById('d-hero-img').src = p.hero;
+            document.getElementById('d-hero-img').alt = p.name;
+            document.getElementById('d-title').textContent = p.emoji + ' ' + p.name;
+            document.getElementById('d-subtitle').textContent = p.desc;
+
+            // info tiles
+            document.getElementById('d-info-grid').innerHTML = `
+    <div class="info-tile"><div class="info-tile-label">Crowd Level</div><div class="info-tile-val" style="color:${ccol(p.crowd)}">${clabel(p.crowd)}</div></div>
+    <div class="info-tile"><div class="info-tile-label">Crowd %</div><div class="info-tile-val">${p.crowdPct}%</div></div>
+    <div class="info-tile"><div class="info-tile-label">Avg Wait</div><div class="info-tile-val">${p.wait}</div></div>
+    <div class="info-tile"><div class="info-tile-label">Best Time</div><div class="info-tile-val" style="font-size:15px">${p.best}</div></div>
+    <div class="info-tile"><div class="info-tile-label">Rating</div><div class="info-tile-val">⭐ ${p.rating}</div></div>
+    <div class="info-tile"><div class="info-tile-label">Type</div><div class="info-tile-val" style="font-size:13px">${p.type}</div></div>
+  `;
+
+            // bars
+            const mx = Math.max(...p.forecast);
+            document.getElementById('d-bars').innerHTML = p.forecast.map((v, i) => {
+                const h = Math.max(5, Math.round((v / mx) * 72));
+                const col = v < 40 ? 'var(--green)' : v < 70 ? 'var(--yellow)' : 'var(--red)';
+                return `<div class="barcol"><div class="barrect" style="height:${h}px;background:${col}"></div><div class="barlabel">${HOURS[i]}</div></div>`;
+            }).join('');
+
+            // alternatives
+            const heading = document.getElementById('d-alts-heading');
+            const altsList = document.getElementById('d-alts-list');
+            if (p.crowd === 'high' && alts.length > 0) {
+                heading.innerHTML = '<span style="color:var(--red)">⚠️</span> Crowd is high — try these less crowded alternatives:';
+                altsList.innerHTML = alts.map(a => `
+      <div class="alt-row" onclick="openDetailPage(${a.id})">
+        <div><div class="alt-name">${a.emoji} ${a.name}</div><div class="alt-region">📍 ${a.region}</div></div>
+        <div class="cbadge ${cclass(a.crowd)}">${clabel(a.crowd)}</div>
+      </div>
+    `).join('');
+                document.getElementById('d-alts-section').style.display = 'block';
+            } else {
+                document.getElementById('d-alts-section').style.display = 'none';
+            }
+
+            // hotels
+            document.getElementById('d-hotels').innerHTML = p.hotels.map(h => `
+    <div class="amenity-card">
+      ${h.img ? `<img class="ac-img" src="${h.img}" alt="${h.name}" loading="lazy" onerror="this.style.display='none'">` : ''}
+      <div class="ac-body">
+        <div class="ac-name">${h.name}</div>
+        <div class="ac-meta">📍 ${h.dist} · ${h.price}</div>
+        <div class="ac-tags">${h.tags.map(t => `<span class="actag">${t}</span>`).join('')}</div>
+        <div class="ac-rating">★ ${h.rating} <span style="color:var(--muted);font-size:11px">Rating</span></div>
+        <button class="avail-btn" style="margin-top:10px;width:100%;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);color:var(--accent2);border-radius:9px;padding:8px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s" onclick="bookHotel('${h.name}', ${p.id})">Check Availability →</button>
+      </div>
+    </div>
+  `).join('');
+
+            // restaurants
+            document.getElementById('d-restaurants').innerHTML = p.restaurants.map(r => `
+    <div class="amenity-card">
+      ${r.img ? `<img class="ac-img" src="${r.img}" alt="${r.name}" loading="lazy">` : `<div class="ac-img-placeholder">${r.emoji || '🍽️'}</div>`}
+      <div class="ac-body">
+        <div class="ac-name">${r.name}</div>
+        <div class="ac-meta">${r.cuisine} · ${r.dist}</div>
+        <div class="ac-tags">${r.tags.map(t => `<span class="actag">${t}</span>`).join('')}</div>
+        <div class="ac-rating">★ ${r.rating}</div>
+      </div>
+    </div>
+  `).join('');
+
+            // shops
+            document.getElementById('d-shops').innerHTML = p.shops.map(s => `
+    <div class="amenity-card">
+      <div class="ac-img-placeholder">${s.emoji}</div>
+      <div class="ac-body">
+        <div class="ac-name">${s.name}</div>
+        <div class="ac-meta">${s.dist}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:7px;line-height:1.4">${s.desc}</div>
+        <div class="ac-rating">★ ${s.rating}</div>
+      </div>
+    </div>
+  `).join('');
+
+            // POIs
+            document.getElementById('d-pois').innerHTML = p.pois.map(poi => `
+    <div class="poi-card">
+      <div class="poi-icon">${poi.icon}</div>
+      <div><div class="poi-name">${poi.name}</div><div class="poi-desc">${poi.desc}</div></div>
+    </div>
+  `).join('');
+
+            // gallery
+            document.getElementById('d-gallery').innerHTML = p.gallery.map(url => `
+    <div class="gallery-thumb">
+      <img src="${url}" alt="Gallery" loading="lazy" onerror="this.parentElement.style.display='none'">
+    </div>
+  `).join('');
+
+            // map
+            document.getElementById('d-map-text').textContent = p.mapText;
+            document.getElementById('d-map-link').href = p.mapLink;
+        }
+
+        function bookHotel(name, placeId) {
+            openModal(name, placeId);
+        }
+
+        /* ══════════════════════════════════════════════════
+           MAP
+        ══════════════════════════════════════════════════ */
+        const MAP_NODES = [
+            { id: 1, name: 'Marina Beach', x: 590, y: 195, crowd: 'low' },
+            { id: 2, name: 'Kapaleeshwarar', x: 570, y: 215, crowd: 'high' },
+            { id: 3, name: 'Mahabalipuram', x: 595, y: 290, crowd: 'moderate' },
+            { id: 7, name: 'Meenakshi Temple', x: 220, y: 330, crowd: 'high' },
+            { id: 4, name: 'Ooty Garden', x: 108, y: 148, crowd: 'moderate' },
+            { id: 6, name: 'Kodaikanal', x: 190, y: 268, crowd: 'moderate' },
+            { id: 11, name: 'Rameswaram', x: 305, y: 388, crowd: 'high' },
+            { id: 10, name: 'Yercaud', x: 248, y: 168, crowd: 'low' },
+            { id: 9, name: 'Vedanthangal', x: 500, y: 265, crowd: 'low' },
+            { id: 8, name: 'Covelong', x: 598, y: 252, crowd: 'low' },
+            { id: 5, name: "Elliot's Beach", x: 582, y: 235, crowd: 'low' },
+            { id: 12, name: 'Pichavaram', x: 448, y: 308, crowd: 'low' },
+        ];
+        function renderMap() {
+            const svg = document.getElementById('mapSvg');
+            const cm = { low: '#22c55e', moderate: '#f59e0b', high: '#ef4444' };
+            let h = `<rect width="700" height="440" fill="#0d1a2e"/>
+    <defs><pattern id="g" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0L0 0 0 30" fill="none" stroke="rgba(255,255,255,.035)" stroke-width=".5"/></pattern></defs>
+    <rect width="700" height="440" fill="url(#g)"/>
+    <text x="18" y="30" font-size="13" fill="rgba(255,255,255,.22)" font-family="DM Sans,sans-serif" font-weight="500">Tamil Nadu — Click a node to view details</text>`;
+            MAP_NODES.forEach(n => {
+                const p = PLACES.find(x => x.id === n.id);
+                const c = cm[p ? p.crowd : n.crowd];
+                const lbl = n.name.length > 13 ? n.name.slice(0, 12) + '…' : n.name;
+                h += `<g style="cursor:pointer" onclick="openDetailPage(${n.id})">
+      <circle cx="${n.x}" cy="${n.y}" r="30" fill="${c}" opacity=".08"/>
+      <circle cx="${n.x}" cy="${n.y}" r="17" fill="${c}" opacity=".2"/>
+      <circle cx="${n.x}" cy="${n.y}" r="9" fill="${c}" opacity=".9"/>
+      <text x="${n.x}" y="${n.y + 24}" text-anchor="middle" font-size="10.5" fill="rgba(255,255,255,.7)" font-family="DM Sans,sans-serif">${lbl}</text>
+    </g>`;
+            });
+            svg.innerHTML = h;
+        }
+
+        /* ══════════════════════════════════════════════════
+           ALL AMENITIES PAGE
+        ══════════════════════════════════════════════════ */
+        function renderAllAmenities(type) {
+            try {
+                const grid = document.getElementById('allAmenitiesGrid');
+
+                const all = [];
+                PLACES.forEach(p => {
+                    p.hotels.forEach(h => all.push({ ...h, ptype: 'hotel', place: p.name }));
+                    p.restaurants.forEach(r => all.push({ ...r, ptype: 'restaurant', place: p.name }));
+                    p.shops.forEach(s => all.push({ ...s, ptype: 'shopping', place: p.name, rating: s.rating || 4.0, tags: s.tags || [] }));
+                });
+                const filtered = type === 'all' ? all : all.filter(a => a.ptype === type);
+                
+                grid.innerHTML = filtered.slice(0, 24).map(a => `
+        <div class="amenity-card" style="background:var(--s1)">
+          ${a.img ? `<img class="ac-img" src="${a.img}" alt="${a.name}" loading="lazy" onerror="this.style.display='none'">` : `<div class="ac-img-placeholder">${a.emoji || '🏪'}</div>`}
+          <div class="ac-body">
+            <div class="ac-name">${a.name}</div>
+            <div class="ac-meta" style="color:var(--muted);font-size:12px">📍 ${a.place} · ${a.dist || 'Nearby'}</div>
+            <div class="ac-tags">${(a.tags || []).slice(0, 3).map(t => `<span class="actag">${t}</span>`).join('')}</div>
+            <div class="ac-rating" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--yellow)">★ ${a.rating}</div>
+          </div>
+        </div>
+      `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        /* ══════════════════════════════════════════════════
+           GALLERY PAGE
+        ══════════════════════════════════════════════════ */
+        function renderGalleryPage() {
+            const grid = document.getElementById('galleryPageGrid');
+            const items = [];
+            PLACES.forEach(p => p.gallery.forEach(url => items.push({ url, place: p.name, emoji: p.emoji })));
+            grid.innerHTML = items.map(item => `
+    <div style="border-radius:12px;overflow:hidden;background:var(--s1);border:1px solid var(--border);transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+      <div style="height:130px;overflow:hidden;background:var(--s2)">
+        <img src="${item.url}" alt="${item.place}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'">
+      </div>
+      <div style="padding:10px 12px">
+        <div style="font-family:'Syne',sans-serif;font-weight:600;font-size:13px">${item.emoji} ${item.place}</div>
+      </div>
+    </div>
+  `).join('');
+        }
+
+        /* ══════════════════════════════════════════════════
+           BOOKINGS PAGE
+        ══════════════════════════════════════════════════ */
+        async function fetchAndRenderBookings() {
+            const grid = document.getElementById('bookingsGrid');
+            grid.innerHTML = '<div style="color:var(--muted);padding:20px;">Loading bookings...</div>';
+            try {
+                const res = await fetch(`${API_BASE}/bookings`);
+                if (!res.ok) throw new Error('API Error');
+                const json = await res.json();
+                const bookings = json.data || [];
+                
+                if (bookings.length === 0) {
+                    grid.innerHTML = '<div style="color:var(--muted);padding:20px;">No bookings found. You have not made any reservations yet.</div>';
+                    return;
+                }
+                
+                grid.innerHTML = bookings.reverse().map(b => `
+                    <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:16px;">
+                        <div style="font-weight:600;font-size:16px;margin-bottom:4px;color:var(--text)">🏨 ${b.amenityName}</div>
+                        <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">Time Slot: ${b.slot}</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-size:12px;color:var(--accent2);background:rgba(59,130,246,.1);padding:4px 8px;border-radius:6px;border:1px solid rgba(59,130,246,.25)">Confirmed</span>
+                            <span style="font-size:11px;color:var(--muted)">${new Date(b.createdAt).toLocaleString()}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                grid.innerHTML = '<div style="color:var(--red);padding:20px;">Failed to load bookings.</div>';
+            }
+        }
+
+        /* ══════════════════════════════════════════════════
+           BOOKING MODAL
+        ══════════════════════════════════════════════════ */
+        const GENERIC_SLOTS = ['9am', '11am', '1pm', '3pm', '5pm', '7pm'];
+        function openModal(amenityName, placeId) {
+            currentAmenityForBooking = amenityName;
+            currentPlaceIdForBooking = placeId;
+            selectedSlot = null;
+            document.getElementById('modal-title').textContent = amenityName;
+            document.getElementById('modal-desc').textContent = 'Select a time slot for your reservation:';
+            document.getElementById('modal-slots').innerHTML = GENERIC_SLOTS.map(s => `
+    <div class="slot-btn" onclick="pickSlot(this,'${s}')">${s}</div>
+  `).join('');
+            document.getElementById('modalOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function pickSlot(el, s) {
+            document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('chosen'));
+            el.classList.add('chosen');
+            selectedSlot = s;
+        }
+        async function confirmBooking() {
+            if (!selectedSlot) { toast('⚠️ Please select a time slot'); return; }
+            
+            const btn = document.querySelector('.btn-confirm');
+            const oldText = btn.textContent;
+            btn.textContent = 'Confirming...';
+            btn.disabled = true;
+
+            const success = await apiCreateBooking({
+                placeId: currentPlaceIdForBooking || 1,
+                amenityName: currentAmenityForBooking,
+                amenityType: 'hotel',
+                slot: selectedSlot,
+                userName: 'Guest',
+                userEmail: 'guest@example.com'
+            });
+
+            btn.textContent = oldText;
+            btn.disabled = false;
+
+            if (success) {
+                closeModal();
+            }
+        }
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+        /* ══════════════════════════════════════════════════
+           KEYBOARD
+        ══════════════════════════════════════════════════ */
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { closeModal(); }
+        });
+
+        /* ══════════════════════════════════════════════════
+           INIT
+        ══════════════════════════════════════════════════ */
+        fetchPlaces();
+        fetchStats();
+        setInterval(() => {
+            fetchPlaces(true);
+            fetchStats();
+        }, 30000);
+</script>
+</body>
+
+</html>

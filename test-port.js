@@ -1,0 +1,1 @@
+const http = require('http'); const req = http.get('http://localhost:9999/api/health', (res) => { console.log(res.statusCode); process.exit(0); }); req.on('error', (e) => { console.log(e.message); process.exit(1); }); req.end();
