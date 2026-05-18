@@ -623,4 +623,5 @@ app.listen(PORT, () => {
   console.log(`   GET  /api/bookings        - All bookings`);
   console.log(`   DELETE /api/bookings/:id  - Cancel booking`);
   console.log(`   GET  /api/health          - Health check\n`);
-});
+});m o d u l e . e x p o r t s   =   a p p ;  
+ 
